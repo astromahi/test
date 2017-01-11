@@ -1,7 +1,7 @@
 FROM debian:jessie
 
-COPY usbupdater.sh /root/usbupdater.sh
+COPY usbupdater.sh /usr/bin/
 
-RUN chmod +x /root/usbupdter.sh
+RUN chmod +x /usr/bin/usbupdater.sh
 
-ENTRYPOINT ["usbupdter.sh"]
+ENTRYPOINT ["usbupdater.sh"]
