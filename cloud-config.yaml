@@ -44,7 +44,7 @@ write_files:
         DISCOVERY_URL=https://discovery.etcd.io/fe17281e0e7272df34dbf032541732ee
         LOGSTASH_HOST=ilcs.imaginelearning.com:5015
         ELASTIC_URL=ilcs.cloudapp.net:9200
-        
+
     - path: /run/cloud-config.yml
       permissions: '0644'
       content: |
@@ -74,7 +74,7 @@ write_files:
               DISCOVERY_URL=https://discovery.etcd.io/fe17281e0e7272df34dbf032541732ee
               LOGSTASH_HOST=ilcs.imaginelearning.com:5015
               ELASTIC_URL=ilcs.cloudapp.net:9200
-              
+
           ###################### Quay.io credentials ###########
           - path: /root/.dockercfg
             owner: root:root
@@ -151,13 +151,13 @@ write_files:
             - name: 00-eno1.network
               runtime: true
               content: |
-                
+
                 [Match]
                 Name=e*
 
                 [Network]
                 DHCP=yes
-                
+
             - name: etcd.service
               mask: true
 
@@ -237,7 +237,7 @@ write_files:
                   --env=TAG \
                   --env=GUID  \
                   docker-mb.imaginelearning.com/ilmscli:develop \
-                    ilmscli sync -mspath /data/ilms -aurl https://testmedia-api.my.imaginelearning.com 
+                    ilmscli sync -mspath /data/ilms -aurl https://testmedia-api.my.imaginelearning.com
                 ExecStop=-/usr/bin/docker stop ilmscli-sync
 
             - name: ilmscli-heartbeat.service
@@ -247,7 +247,7 @@ write_files:
                 Description=ilmscli-heartbeat Service
                 After=ilmstorage.service
                 Requires=ilmstorage.service
-                
+
                 [Service]
                 TimeoutStartSec=0
                 Restart=always
@@ -279,7 +279,7 @@ write_files:
                   --net=host \
                   -v /proc:/host/proc:ro \
                   docker-mb.imaginelearning.com/ilmscli:develop \
-                        ilmscli heartbeat  -apiurl https://testlogger.my.imaginelearning.com 
+                        ilmscli heartbeat  -apiurl https://testlogger.my.imaginelearning.com
                 ExecStop=-/usr/bin/docker stop ilmscli-heartbeat
 
             - name: ilmscli-ping.service
@@ -378,7 +378,7 @@ write_files:
                 Description=Imagine Learning Media Service Web Socket Tunnel
                 After=docker.service
                 Requires=docker.service
-                
+
                 [Service]
                 TimeoutStartSec=0
                 Restart=always
@@ -460,6 +460,7 @@ write_files:
                 ExecStartPre=-/usr/bin/docker rm -f ilms-usbupdater
                 ExecStart=/usr/bin/docker run \
                   --name ilms-usbupdater \
+                  --privileged \
                   --volume /var/run/dbus:/var/run/dbus \
                   --volume /run/systemd:/run/systemd \
                   --volume /var/lib/coreos-install:/var/lib/coreos-install \
@@ -553,7 +554,7 @@ coreos:
         Description=ILMS CMD Service
         DefaultDependencies=no
         After=local-fs.target
-        
+
         [Service]
         TimeoutStartSec=0
         Restart=always
@@ -607,10 +608,9 @@ coreos:
         Description=Run coreos-cloudinit with actual cloud-config after environment has been set up
         Requires=prep-cloud-config.service
         After=prep-cloud-config.service
-        
+
         [Service]
         Type=oneshot
         RemainAfterExit=yes
         EnvironmentFile=/etc/environment
         ExecStart=/usr/bin/coreos-cloudinit --from-file=/run/cloud-config.yml
-
