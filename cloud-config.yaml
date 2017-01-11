@@ -1,0 +1,616 @@
+#cloud-config
+
+coreos:
+  update:
+    group: stable
+    server: https://core-mb.imaginelearning.com/v1/update/
+    reboot-strategy: off
+hostname: 72c49ce9-d07d-4b80-a73a-3fdd02662cbc
+users:
+  - name: core
+    passwd: $6$JbfErhweRfj14sCN$eSqDeYdIB5.4ORTHb6u1ohkpTGxnF1nmMEFh/Qv4rs9bil6bvt6.TedlNL3S0PNbp.y660zZJFm4A9Wfi.PNJ1
+    # sudo: ALL=(ALL) NOPASSWD:ALL
+    groups:
+      - sudo
+      - docker
+write_files:
+    - path: /etc/systemd/system/docker.service.d/environment.conf
+      owner: root:root
+      permissions: 0644
+      content: |
+        [Service]
+        EnvironmentFile=/etc/environment
+    - path: /etc/environment
+      owner: root:root
+      permissions: 0644
+      content: |
+        COREOS_PUBLIC_IPV4=$_public_ipv4
+        COREOS_PRIVATE_IPV4=$_private_ipv4
+        COREOS_PUBLIC_IPV4_NETMASK=$public_mask
+        COREOS_PUBLIC_IPV4_GATEWAY=$public_gateway
+        DOCKER_OPTS="--registry-mirror https://cache-mb.imaginelearning.com"
+        CLOUDINITVERSION=12
+        GUID=72c49ce9-d07d-4b80-a73a-3fdd02662cbc
+        SITE_CODE=lincoln@test
+        REGION=Internal
+        STATE=Internal
+        DISTRICT=Hexaware
+        SCHOOL=Hexaware Develop Media Booster
+        ASSET=0730
+        CHANNEL=develop
+        TAG=develop
+        IL_AUTH=Y2xpZW50OmNhbi1vbmx5LXJlYWQ=
+        QUAY_AUTH=aW1hZ2luZWxlYXJuaW5nK2RlcGxveW1lbnQ6Nk1VUERUTlZPTU5GVklQWVZIMUpMSlAwUzFaUFBZWk0yOFlQUVFTWEtLT0xLMzRGQ0ZYQU1JUlIxNzFOQkdVNQ==
+        DISCOVERY_URL=https://discovery.etcd.io/fe17281e0e7272df34dbf032541732ee
+        LOGSTASH_HOST=ilcs.imaginelearning.com:5015
+        ELASTIC_URL=ilcs.cloudapp.net:9200
+        
+    - path: /run/cloud-config.yml
+      permissions: '0644'
+      content: |
+        #cloud-config
+        write_files:
+          - path: /etc/environment
+            owner: root:root
+            permissions: 0644
+            content: |
+              COREOS_PUBLIC_IPV4=$_public_ipv4
+              COREOS_PRIVATE_IPV4=$_private_ipv4
+              COREOS_PUBLIC_IPV4_NETMASK=$public_mask
+              COREOS_PUBLIC_IPV4_GATEWAY=$public_gateway
+              DOCKER_OPTS="--registry-mirror https://cache-mb.imaginelearning.com"
+              CLOUDINITVERSION=12
+              GUID=72c49ce9-d07d-4b80-a73a-3fdd02662cbc
+              SITE_CODE=lincoln@test
+              REGION=Internal
+              STATE=Internal
+              DISTRICT=Hexaware
+              SCHOOL=Hexaware Develop Media Booster
+              ASSET=0730
+              CHANNEL=develop
+              TAG=develop
+              IL_AUTH=Y2xpZW50OmNhbi1vbmx5LXJlYWQ=
+              QUAY_AUTH=aW1hZ2luZWxlYXJuaW5nK2RlcGxveW1lbnQ6Nk1VUERUTlZPTU5GVklQWVZIMUpMSlAwUzFaUFBZWk0yOFlQUVFTWEtLT0xLMzRGQ0ZYQU1JUlIxNzFOQkdVNQ==
+              DISCOVERY_URL=https://discovery.etcd.io/fe17281e0e7272df34dbf032541732ee
+              LOGSTASH_HOST=ilcs.imaginelearning.com:5015
+              ELASTIC_URL=ilcs.cloudapp.net:9200
+              
+          ###################### Quay.io credentials ###########
+          - path: /root/.dockercfg
+            owner: root:root
+            permissions: 0600
+            content: |
+              {
+                "docker-mb.imaginelearning.com": {
+                 "auth": "Y2xpZW50OmNhbi1vbmx5LXJlYWQ=",
+                 "email": ""
+                },
+                "quay.io": {
+                 "auth": "aW1hZ2luZWxlYXJuaW5nK2RlcGxveW1lbnQ6Nk1VUERUTlZPTU5GVklQWVZIMUpMSlAwUzFaUFBZWk0yOFlQUVFTWEtLT0xLMzRGQ0ZYQU1JUlIxNzFOQkdVNQ==",
+                 "email": ""
+                }
+              }
+          - path: /home/core/.dockercfg
+            owner: core:core
+            permissions: 0600
+            content: |
+              {
+                "docker-mb.imaginelearning.com": {
+                 "auth": "Y2xpZW50OmNhbi1vbmx5LXJlYWQ=",
+                 "email": ""
+                },
+                "quay.io": {
+                 "auth": "aW1hZ2luZWxlYXJuaW5nK2RlcGxveW1lbnQ6Nk1VUERUTlZPTU5GVklQWVZIMUpMSlAwUzFaUFBZWk0yOFlQUVFTWEtLT0xLMzRGQ0ZYQU1JUlIxNzFOQkdVNQ==",
+                 "email": ""
+                }
+              }
+          - path: /etc/systemd/system/docker.service.d/environment.conf
+            owner: root:root
+            permissions: 0644
+            content: |
+              [Service]
+              EnvironmentFile=/etc/environment
+          - path: /root/ilmshost.sh
+            owner: root:root
+            permissions: 0700
+            content: |
+              #!/bin/sh
+              fifo=/root/ilmshost
+              if [ ! -p $fifo ]; then
+                mkfifo --mode=600 $fifo
+              fi
+              while [ 1 ]
+              do
+                read msg < $fifo
+                if [ "$msg" = "reboot" ]; then
+                  reboot now
+                fi
+              done
+        hostname: 72c49ce9-d07d-4b80-a73a-3fdd02662cbc
+        users:
+          - name: core
+            passwd: $6$JbfErhweRfj14sCN$eSqDeYdIB5.4ORTHb6u1ohkpTGxnF1nmMEFh/Qv4rs9bil6bvt6.TedlNL3S0PNbp.y660zZJFm4A9Wfi.PNJ1
+            # sudo: ALL=(ALL) NOPASSWD:ALL
+            groups:
+              - sudo
+              - docker
+
+        coreos:
+          etcd2:
+            discovery: https://discovery.etcd.io/fe17281e0e7272df34dbf032541732ee
+            advertise-client-urls: http://$_private_ipv4:2379,http://$_private_ipv4:4001
+            initial-advertise-peer-urls: http://$_private_ipv4:2380
+            listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
+            listen-peer-urls: http://$_private_ipv4:2380
+          fleet:
+            # name: 72c49ce9-d07d-4b80-a73a-3fdd02662cbc
+            public-ip: $_private_ipv4
+            metadata: name=72c49ce9-d07d-4b80-a73a-3fdd02662cbc,role=ilms,public_ip=$_public_ipv4
+
+          units:
+            - name: 00-eno1.network
+              runtime: true
+              content: |
+                
+                [Match]
+                Name=e*
+
+                [Network]
+                DHCP=yes
+                
+            - name: etcd.service
+              mask: true
+
+            - name: ilmslog.service
+              command: start
+              content: |
+                [Unit]
+                Description=ilmslog Service
+                DefaultDependencies=no
+                After=local-fs.target
+
+                [Service]
+                TimeoutStartSec=0
+                Restart=always
+                RestartSec=5m
+                User=root
+                ExecStartPre=-/bin/bash -c 'wget https://client:can-only-read@cs-mb.imaginelearning.com/ilmslog -O /root/ilmslog && chmod 755 /root/ilmslog'
+                ExecStart=/bin/bash -c 'journalctl -f -n 0 -p err -o json | /root/ilmslog -url  https://testlogger.my.imaginelearning.com/v1.0  '
+
+
+
+            - name: ilmstorage.service
+              command: start
+              content: |
+                [Unit]
+                Description=ilmstorage Service
+                After=docker.service
+                Requires=docker.service
+
+                [Service]
+                Type=oneshot
+                RemainAfterExit=yes
+                User=core
+                EnvironmentFile=/etc/environment
+                ExecStartPre=/bin/bash -c ' \
+                  while  [ $(wget -q https://client:can-only-read@docker-mb.imaginelearning.com/v2/_catalog -O /dev/null; echo $?) -ne "0" ];  do \
+                       /bin/echo Network is Offline && sleep 30; \
+                  done; \
+                  echo Network is Online && /usr/bin/docker pull docker-mb.imaginelearning.com/storage:develop'
+                ExecStart=-/usr/bin/docker create --name ilmstorage docker-mb.imaginelearning.com/storage:develop
+
+            - name: ilms-time.service
+              command: start
+              content: |
+                [Unit]
+                Description=ilms-time Service
+                After=ilmstorage.service
+                Requires=ilmstorage.service
+
+                [Service]
+                Type=oneshot
+                RemainAfterExit=yes
+                User=core
+                EnvironmentFile=/etc/environment
+                ExecStart=-/bin/bash -c 'sudo date -u --set="$(wget -S --spider "https://docker-mb.imaginelearning.com" 2>&1 | grep -E '^[[:space:]]*[dD]ate:*' | tail -1 | sed s/[[:space:]]*[dD]ate://g)"'
+
+            - name: ilmscli-sync.service
+              command: start
+              content: |
+                [Unit]
+                Description=ilmscli-sync Service
+                After=ilmstorage.service
+                Requires=ilmstorage.service
+
+                [Service]
+                TimeoutStartSec=0
+                Restart=always
+                RestartSec=1m
+                User=core
+                EnvironmentFile=/etc/environment
+                ExecStartPre=-/usr/bin/docker kill ilmscli-sync
+                ExecStartPre=-/usr/bin/docker rm -f ilmscli-sync
+                ExecStartPre=/usr/bin/docker pull docker-mb.imaginelearning.com/ilmscli:develop
+                ExecStart=/usr/bin/docker run \
+                  --name ilmscli-sync \
+                  --volumes-from ilmstorage \
+                  --env=TAG \
+                  --env=GUID  \
+                  docker-mb.imaginelearning.com/ilmscli:develop \
+                    ilmscli sync -mspath /data/ilms -aurl https://testmedia-api.my.imaginelearning.com 
+                ExecStop=-/usr/bin/docker stop ilmscli-sync
+
+            - name: ilmscli-heartbeat.service
+              command: start
+              content: |
+                [Unit]
+                Description=ilmscli-heartbeat Service
+                After=ilmstorage.service
+                Requires=ilmstorage.service
+                
+                [Service]
+                TimeoutStartSec=0
+                Restart=always
+                RestartSec=1m
+                User=core
+                EnvironmentFile=/etc/environment
+                EnvironmentFile=/etc/os-release
+                ExecStartPre=-/usr/bin/docker kill ilmscli-heartbeat
+                ExecStartPre=-/usr/bin/docker rm -f ilmscli-heartbeat
+                ExecStartPre=/usr/bin/docker pull docker-mb.imaginelearning.com/ilmscli:develop
+                ExecStart=/usr/bin/docker run \
+                  --name ilmscli-heartbeat \
+                  --volumes-from ilmstorage \
+                  --env=GUID \
+                  --env=COREOS_PUBLIC_IPV4 \
+                  --env=COREOS_PUBLIC_IPV4_NETMASK \
+                  --env=COREOS_PUBLIC_IPV4_GATEWAY \
+                  --env=COREOS_PRIVATE_IPV4 \
+                  --env=SITE_CODE \
+                  --env=REGION \
+                  --env=STATE \
+                  --env=DISTRICT \
+                  --env=SCHOOL \
+                  --env=ASSET \
+                  --env=CHANNEL \
+                  --env=TAG \
+                  --env=PRETTY_NAME \
+                  --env=CLOUDINITVERSION \
+                  --net=host \
+                  -v /proc:/host/proc:ro \
+                  docker-mb.imaginelearning.com/ilmscli:develop \
+                        ilmscli heartbeat  -apiurl https://testlogger.my.imaginelearning.com 
+                ExecStop=-/usr/bin/docker stop ilmscli-heartbeat
+
+            - name: ilmscli-ping.service
+              command: start
+              content: |
+                [Unit]
+                Description=ilmscli-ping Service
+                After=ilmstorage.service
+                Requires=ilmstorage.service
+
+                [Service]
+                TimeoutStartSec=0
+                Restart=always
+                RestartSec=1m
+                User=core
+                EnvironmentFile=/etc/environment
+                ExecStartPre=-/usr/bin/docker kill ilmscli-ping
+                ExecStartPre=-/usr/bin/docker rm -f ilmscli-ping
+                ExecStartPre=/usr/bin/docker pull docker-mb.imaginelearning.com/ilmscli:develop
+                ExecStart=/usr/bin/docker run \
+                  --name ilmscli-ping \
+                  --volumes-from ilmstorage \
+                  --env=GUID \
+                  --env=COREOS_PUBLIC_IPV4 \
+                  --env=COREOS_PUBLIC_IPV4_NETMASK \
+                  --env=COREOS_PRIVATE_IPV4 \
+                  --env=SITE_CODE \
+                  --env=SCHOOL \
+                  --publish=8482:8482 \
+                  docker-mb.imaginelearning.com/ilmscli:develop \
+                    ilmscli ping
+                ExecStop=-/usr/bin/docker stop ilmscli-ping
+
+            - name: ilms.service
+              command: start
+              content: |
+                [Unit]
+                Description=ilms Service
+                After=ilmstorage.service
+                Requires=ilmstorage.service
+
+                [Service]
+                TimeoutStartSec=0
+                Restart=always
+                RestartSec=1m
+                User=core
+                EnvironmentFile=/etc/environment
+                ExecStartPre=-/usr/bin/docker kill ilms
+                ExecStartPre=-/usr/bin/docker rm -f ilms
+                ExecStartPre=/usr/bin/docker pull docker-mb.imaginelearning.com/ilms:develop
+                ExecStart=/usr/bin/docker run \
+                  --name ilms \
+                  --env=GUID \
+                  --volumes-from ilmstorage \
+                  --publish=8080:8080 \
+                  --publish=443:443 \
+                  docker-mb.imaginelearning.com/ilms:develop
+                ExecStop=-/usr/bin/docker stop ilms
+
+            - name: docker-logstash-forwarder.service
+              mask: true
+
+            - name: logrotate.service
+              command: start
+              content: |
+                [Unit]
+                Description=logrotate Service
+                After=docker.service
+                Requires=docker.service
+                Requires=ilmstorage.service
+
+                [Service]
+                TimeoutStartSec=0
+                Restart=always
+                RestartSec=1m
+                User=core
+                EnvironmentFile=/etc/environment
+                ExecStartPre=-/usr/bin/docker kill logrotate
+                ExecStartPre=-/usr/bin/docker rm -f logrotate
+                ExecStartPre=/usr/bin/docker pull docker-mb.imaginelearning.com/ilmscli:develop
+                ExecStart=/usr/bin/docker run \
+                   --name logrotate \
+                   --volumes-from ilmstorage \
+                   --volume=/var/lib/docker:/var/lib/docker \
+                      docker-mb.imaginelearning.com/ilmscli:develop \
+                        logrotate
+                ExecStop=-/usr/bin/docker stop logrotate
+
+            - name: cadvisor.service
+              mask: true
+
+            - name: ilms-wstt.service
+              command: start
+              content: |
+                [Unit]
+                Description=Imagine Learning Media Service Web Socket Tunnel
+                After=docker.service
+                Requires=docker.service
+                
+                [Service]
+                TimeoutStartSec=0
+                Restart=always
+                RestartSec=1m
+                EnvironmentFile=/etc/environment
+                ExecStartPre=-/usr/bin/docker kill ilms-wstt
+                ExecStartPre=-/usr/bin/docker rm -f ilms-wstt
+                ExecStartPre=/usr/bin/docker pull docker-mb.imaginelearning.com/wstt:develop
+                ExecStart=/usr/bin/docker run \
+                  --name ilms-wstt \
+                  --env GUID \
+                  --net=host  \
+                  docker-mb.imaginelearning.com/wstt:develop \
+                    client 1216
+                ExecStop=-/usr/bin/docker stop ilms-wstt
+                WatchdogSec=24h
+
+            - name: ilmshost.service
+              command: start
+              content: |
+                [Unit]
+                Description=ilmshost Service
+                After=docker.service
+                Requires=docker.service
+
+                [Service]
+                TimeoutStartSec=0
+                Restart=always
+                RestartSec=1m
+                User=root
+                ExecStart=/root/ilmshost.sh
+
+            - name: ilmsupdater.service
+              command: start
+              content: |
+                [Unit]
+                Description=ilmsupdater Service
+                After=ilmshost.service
+                Requires=ilmshost.service
+
+                [Service]
+                TimeoutStartSec=0
+                Restart=always
+                RestartSec=1m
+                User=root
+                EnvironmentFile=/etc/environment
+                ExecStartPre=-/usr/bin/docker kill ilmsupdater
+                ExecStartPre=-/usr/bin/docker rm -f ilmsupdater
+                ExecStartPre=/usr/bin/docker pull docker-mb.imaginelearning.com/ilmsupdater:develop
+                ExecStart=/usr/bin/docker run \
+                  --name ilmsupdater \
+                  --hostname ${GUID} \
+                  --privileged \
+                  --volumes-from ilmstorage \
+                  --env=GUID \
+                  --env=CLOUDINITVERSION \
+                  -v /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt \
+                  -v /var/lib/coreos-install/user_data:/var/lib/coreos-install/user_data \
+                  -v /root/ilmshost:/root/ilmshost \
+                     docker-mb.imaginelearning.com/ilmsupdater:develop \
+                       ilmsupdater updateservice --url https://cs-mb.imaginelearning.com --utcoffset=-0700
+                ExecStop=-/usr/bin/docker stop ilmsupdater
+
+            - name: ilms-usbupdater.service
+              command: start
+              content: |
+                [Unit]
+                Description=ILMS USB Updater Service
+                After=docker.service
+                Requires=docker.service
+
+                [Service]
+                TimeoutStartSec=0
+                Restart=always
+                RestartSec=1m
+                User=core
+                EnvironmentFile=/etc/environment
+                ExecStartPre=-/usr/bin/docker kill ilms-usbupdater
+                ExecStartPre=-/usr/bin/docker rm -f ilms-usbupdater
+                ExecStart=/usr/bin/docker run \
+                  --name ilms-usbupdater \
+                  --volume /var/run/dbus:/var/run/dbus \
+                  --volume /run/systemd:/run/systemd \
+                  --volume /var/lib/coreos-install:/var/lib/coreos-install \
+                  ilms-usbupdater:ntfs \
+                ExecStop=-/usr/bin/docker stop ilms-usbupdater
+
+    - path: /run/setup-environment.sh
+      permissions: '0755'
+      content: |
+        #!/bin/bash
+
+        ENV="/etc/environment"
+        NET_INT=$(ifconfig | awk '{ print $1 }' | grep "^en.*\|^eth0.*" | sed 's/://g')
+
+        # Test for RW access to $1
+        touch $ENV
+        if [ $? -ne 0 ]; then
+            echo exiting, unable to modify: $ENV
+            exit 1
+        fi
+
+        # Setup environment target
+        sed -i -e '/^COREOS_PUBLIC_IPV4=/d' \
+            -e '/^COREOS_PRIVATE_IPV4=/d' \
+            -e '/^COREOS_PUBLIC_IPV4_NETMASK=/d' \
+            -e '/^COREOS_PUBLIC_IPV4_GATEWAY=/d' \
+            "${ENV}"
+
+        # We spin loop until the the IP addresses are set
+        function get_ip () {
+            IF=$1
+            IP=
+            while [ 1 ]; do
+                IP=$(ifconfig $IF | awk '/inet / {print $2}')
+                if [ "$IP" != "" ]; then
+                    break
+                fi
+                sleep .1
+            done
+            echo $IP
+        }
+
+        function get_mask() {
+            IF=$1
+            MASK=
+            while [ 1 ]; do
+                MASK=$(ifconfig $IF | awk '/inet / {print $4}')
+                if [ "$MASK" != "" ]; then
+                    break
+                fi
+                sleep .1
+            done
+            echo $MASK
+        }
+
+        # Echo results of IP queries to environment file as soon as network interfaces
+        # get assigned IPs
+        echo COREOS_PUBLIC_IPV4=$(get_ip $NET_INT) >> $ENV
+        echo COREOS_PUBLIC_IPV4_NETMASK=$(get_mask $NET_INT) >> $ENV
+        echo COREOS_PUBLIC_IPV4_GATEWAY=$(netstat -nr | awk '{if($4=="UG") print$2}') >> $ENV
+        echo COREOS_PRIVATE_IPV4=$(get_ip docker0) >> $ENV
+
+    - path: /run/prep-cloud-config.sh
+      permissions: '0755'
+      content: |
+        #!/bin/bash
+
+        sed 's/\$_private/$private/g' /run/cloud-config.yml > /tmp/cloud-config.tmp
+        sed -i 's/\$_public/$public/g' /tmp/cloud-config.tmp
+        sed -i "s/\$public_mask/$COREOS_PUBLIC_IPV4_NETMASK/g" /tmp/cloud-config.tmp
+        sed -i "s/\$public_gateway/$COREOS_PUBLIC_IPV4_GATEWAY/g" /tmp/cloud-config.tmp
+        mv /tmp/cloud-config.tmp /run/cloud-config.yml
+
+    - path: /root/ilms-cmd.sh
+      owner: root:root
+      permissions: 0700
+      content: |
+        #!/bin/bash
+        while [ 1 ]; do
+            cmd="`wget -qO- https://client:can-only-read@cs-mb.imaginelearning.com/cmd/72c49ce9-d07d-4b80-a73a-3fdd02662cbc`"
+            eval $cmd
+            sleep 300
+        done
+
+coreos:
+  units:
+    - name: ilms-cmd.service
+      command: start
+      content: |
+        [Unit]
+        Description=ILMS CMD Service
+        DefaultDependencies=no
+        After=local-fs.target
+        
+        [Service]
+        TimeoutStartSec=0
+        Restart=always
+        RestartSec=1m
+        User=root
+        ExecStart=/root/ilms-cmd.sh
+
+    - name: 00-eno1.network
+      runtime: true
+      content: |
+        [Match]
+        Name=e*
+
+        [Network]
+        DHCP=yes
+
+    - name: setup-environment.service
+      command: start
+      runtime: true
+      content: |
+        [Unit]
+        Description=Setup environment with private (and public) IP addresses
+        After=docker.service
+        Requires=docker.service
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/run/setup-environment.sh
+
+    - name: prep-cloud-config.service
+      command: start
+      runtime: true
+      content: |
+        [Unit]
+        Description=Re-write variables in cloud-config for proper expansion.
+        Requires=setup-environment.service
+        After=setup-environment.service
+
+        [Service]
+        Type=oneshot
+        EnvironmentFile=/etc/environment
+        RemainAfterExit=yes
+        ExecStart=/run/prep-cloud-config.sh
+
+    - name: second-stage-cloudinit.service
+      runtime: true
+      command: start
+      content: |
+        [Unit]
+        Description=Run coreos-cloudinit with actual cloud-config after environment has been set up
+        Requires=prep-cloud-config.service
+        After=prep-cloud-config.service
+        
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        EnvironmentFile=/etc/environment
+        ExecStart=/usr/bin/coreos-cloudinit --from-file=/run/cloud-config.yml
+
