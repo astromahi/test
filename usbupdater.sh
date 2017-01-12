@@ -31,7 +31,7 @@ do
     then
       echo "extracting usb media"
       systemctl stop ilmscli-sync
-      cat /mnt/ilmstorage.tar | /bin/tar -x
+      cat /mnt/ilmstorage.tar | docker exec -i ilms /bin/tar -x
       systemctl start ilmscli-sync
       echo "usb media extracted"
     fi

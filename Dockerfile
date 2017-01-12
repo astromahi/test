@@ -1,7 +1,8 @@
 FROM debian:jessie
 
-COPY usbupdater.sh /usr/bin/
+RUN apt-get update && apt-get install -y ntfs-3g
 
+COPY usbupdater.sh /usr/bin/
 RUN chmod +x /usr/bin/usbupdater.sh
 
 ENTRYPOINT ["usbupdater.sh"]
