@@ -458,6 +458,7 @@ write_files:
                 ExecStartPre=-/usr/bin/docker rm -f ilms-usbupdater
                 ExecStart=/usr/bin/docker run \
                   --name ilms-usbupdater \
+                  --privileged \
                   --volume /var/lib/coreos-install:/var/lib/coreos-install \
                   --volume /var/run/dbus:/var/run/dbus \
                   --volume /run/systemd:/run/systemd \
